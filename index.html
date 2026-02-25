@@ -300,6 +300,18 @@
         <label class="field-label">Grupo</label>
         <input type="text" id="s-group" placeholder="Ej. 601"/>
       </div>
+      <!-- Plantel -->
+      <div class="field-group">
+        <label class="field-label">Plantel</label>
+        <select id="s-plantel">
+          <option value="">— Selecciona tu plantel —</option>
+          <option value="Azcapotzalco">Azcapotzalco</option>
+          <option value="Naucalpan">Naucalpan</option>
+          <option value="Oriente">Oriente</option>
+          <option value="Sur">Sur</option>
+          <option value="Vallejo">Vallejo</option>
+        </select>
+      </div>
       <!-- Team preview -->
       <div id="team-preview" class="team-preview hidden"></div>
       <button class="btn btn-accent" onclick="goToSelect()">Continuar →</button>
@@ -417,6 +429,9 @@
         </select>
         <select id="filter-group" onchange="renderBrowse()" style="flex:1;min-width:90px">
           <option value="all">Todos los grupos</option>
+        </select>
+        <select id="filter-plantel" onchange="renderBrowse()" style="flex:1;min-width:110px">
+          <option value="all">Todos los planteles</option>
         </select>
       </div>
       <div id="browse-count" style="font-size:12px;color:var(--t3);margin-bottom:12px"></div>
@@ -621,7 +636,7 @@ const WORKSHEETS = [
 let STATE = {
   view: "student",          // student | teacher
   step: "identify",         // identify | select | fill | done
-  student1: "", student2: "", group: "",
+  student1: "", student2: "", group: "", plantel: "",
   selectedWS: null,
   answers: {},
   teacherAuth: false,
@@ -684,15 +699,17 @@ function updateTeamPreview() {
 }
 
 function goToSelect() {
-  const s1 = document.getElementById("s1-name").value.trim();
+  const s1  = document.getElementById("s1-name").value.trim();
   const grp = document.getElementById("s-group").value.trim();
-  if (!s1 || !grp) { alert("Por favor ingresa al menos el nombre del Integrante 1 y el grupo."); return; }
+  const plt = document.getElementById("s-plantel").value;
+  if (!s1 || !grp || !plt) { alert("Por favor completa el nombre del Integrante 1, el grupo y el plantel."); return; }
   STATE.student1 = s1;
   STATE.student2 = document.getElementById("s2-name").value.trim();
   STATE.group    = grp;
+  STATE.plantel  = plt;
   renderWorksheetSelector();
   document.getElementById("greeting-title").textContent = `Hola, equipo 👋`;
-  document.getElementById("greeting-sub").textContent   = `${teamName()} · Grupo ${STATE.group} — ¿Cuál hoja van a llenar?`;
+  document.getElementById("greeting-sub").textContent   = `${teamName()} · Grupo ${STATE.group} · Plantel ${STATE.plantel} — ¿Cuál hoja van a llenar?`;
   showStudentStep("select");
 }
 
@@ -723,7 +740,7 @@ function selectWS(id) {
   document.getElementById("fill-header").innerHTML = `
     <span class="pill" style="color:${ws.color};border-color:${ws.color}55;background:${ws.color}18">${ws.session}</span>
     <div class="section-title">${ws.title}: ${ws.fullTitle}</div>
-    <div class="section-sub" style="margin-bottom:0">🤝 ${teamName()} · Grupo ${STATE.group}</div>`;
+    <div class="section-sub" style="margin-bottom:0">🤝 ${teamName()} · Grupo ${STATE.group} · Plantel ${STATE.plantel}</div>`;
 
   // HT9 problem box
   document.getElementById("ht9-box").classList.toggle("hidden", id !== "ht9");
@@ -767,6 +784,7 @@ function resetAll() {
   document.getElementById("s1-name").value = "";
   document.getElementById("s2-name").value = "";
   document.getElementById("s-group").value = "";
+  document.getElementById("s-plantel").value = "";
   document.getElementById("team-preview").classList.add("hidden");
   showStudentStep("identify");
 }
@@ -789,6 +807,7 @@ async function submitWorksheet() {
   const payload = {
     equipo: teamName(),
     grupo: STATE.group,
+    plantel: STATE.plantel,
     hoja: STATE.selectedWS,
     hojaLabel: ws.title + ": " + ws.fullTitle,
     fecha: new Date().toISOString(),
@@ -850,26 +869,51 @@ function showTab(tab) {
   STATE.activeTab = tab;
 }
 
-// ── LOAD RESPONSES (from localStorage in demo mode) ───────────────────────
-function loadResponses() {
+// ── LOAD RESPONSES — desde Google Sheets si hay URL, si no desde localStorage
+async function loadResponses() {
+  // Mostrar indicador de carga
+  document.getElementById("stat-grid").innerHTML = `
+    <div style="grid-column:1/-1;text-align:center;padding:24px;color:var(--t2);font-size:14px">
+      <span class="spinner" style="border-color:#38bdf844;border-top-color:var(--teal)"></span>
+      &nbsp; Cargando respuestas...
+    </div>`;
+
   let data = [];
-  try {
-    const raw = localStorage.getItem("cb_responses");
-    console.log("localStorage raw:", raw);
-    data = JSON.parse(raw || "[]");
-  } catch(e) { console.error("Error leyendo localStorage:", e); }
+
+  if (SHEET_URL && SHEET_URL !== "PEGA_AQUÍ_TU_URL_DE_APPS_SCRIPT") {
+    // Leer desde Google Sheets
+    try {
+      const res = await fetch(SHEET_URL + "?action=getAll");
+      const json = await res.json();
+      if (json.status === "ok") {
+        data = json.data || [];
+        console.log("✅ Respuestas desde Sheets:", data.length);
+      } else {
+        console.warn("Sheets respondió con error:", json.message);
+        // Fallback a localStorage
+        data = JSON.parse(localStorage.getItem("cb_responses") || "[]");
+      }
+    } catch(e) {
+      console.error("❌ Error leyendo Sheets:", e);
+      // Fallback a localStorage
+      data = JSON.parse(localStorage.getItem("cb_responses") || "[]");
+    }
+  } else {
+    // Modo demo: leer desde localStorage
+    try { data = JSON.parse(localStorage.getItem("cb_responses") || "[]"); } catch(e) {}
+    console.log("Modo demo — localStorage:", data.length);
+  }
+
   STATE.allResponses = data.sort((a,b) => new Date(b.fecha) - new Date(a.fecha));
-  console.log("Total respuestas cargadas:", STATE.allResponses.length);
-  // Populate selects FIRST so renderBrowse has the options ready
   populateFilterSelects();
   renderOverview();
   renderBrowse();
-  // Show empty state hint if no data
+
   if (STATE.allResponses.length === 0) {
     document.getElementById("stat-grid").innerHTML = `
       <div style="grid-column:1/-1;text-align:center;padding:30px;color:var(--t3);font-size:14px">
         📭 No hay respuestas todavía.<br>
-        <span style="font-size:12px">Los equipos deben llenar y enviar las hojas de trabajo desde la vista Alumno.</span>
+        <span style="font-size:12px">Los equipos deben llenar y enviar las hojas desde la vista Alumno.</span>
       </div>`;
     document.getElementById("ws-bars").innerHTML = "<p style='color:var(--t3);font-size:13px'>Sin datos todavía.</p>";
     document.getElementById("session-bars").innerHTML = "<p style='color:var(--t3);font-size:13px'>Sin datos todavía.</p>";
@@ -945,7 +989,8 @@ function renderOverview() {
 function populateFilterSelects() {
   const wsSelect  = document.getElementById("filter-ws");
   const grpSelect = document.getElementById("filter-group");
-  // Reset and repopulate WS
+  const pltSelect = document.getElementById("filter-plantel");
+  // WS
   wsSelect.innerHTML = `<option value="all">Todas las hojas</option>`;
   for (const ws of WORKSHEETS)
     wsSelect.innerHTML += `<option value="${ws.id}">${ws.title}: ${ws.fullTitle.slice(0,35)}</option>`;
@@ -954,14 +999,21 @@ function populateFilterSelects() {
   grpSelect.innerHTML = `<option value="all">Todos los grupos</option>`;
   for (const g of groups)
     grpSelect.innerHTML += `<option value="${g}">Grupo ${g}</option>`;
+  // Planteles
+  const planteles = [...new Set(STATE.allResponses.map(r => r.plantel).filter(Boolean))].sort();
+  pltSelect.innerHTML = `<option value="all">Todos los planteles</option>`;
+  for (const p of planteles)
+    pltSelect.innerHTML += `<option value="${p}">${p}</option>`;
 }
 
 function renderBrowse() {
-  const filterWS  = document.getElementById("filter-ws")?.value  || "all";
-  const filterGrp = document.getElementById("filter-group")?.value || "all";
+  const filterWS  = document.getElementById("filter-ws")?.value     || "all";
+  const filterGrp = document.getElementById("filter-group")?.value  || "all";
+  const filterPlt = document.getElementById("filter-plantel")?.value || "all";
   const filtered = STATE.allResponses.filter(r =>
-    (filterWS  === "all" || r.hoja  === filterWS) &&
-    (filterGrp === "all" || r.grupo === filterGrp)
+    (filterWS  === "all" || r.hoja    === filterWS) &&
+    (filterGrp === "all" || r.grupo   === filterGrp) &&
+    (filterPlt === "all" || r.plantel === filterPlt)
   );
   document.getElementById("browse-count").textContent = `${filtered.length} respuesta(s) encontrada(s)`;
 
@@ -983,7 +1035,7 @@ function renderBrowse() {
       <div class="resp-header">
         <div>
           <div class="resp-name">🤝 ${resp.equipo}</div>
-          <div style="font-size:12px;color:var(--t3);margin-top:2px">Grupo ${resp.grupo} · ${ws?.title || resp.hoja}</div>
+          <div style="font-size:12px;color:var(--t3);margin-top:2px">Grupo ${resp.grupo} · Plantel ${resp.plantel || "—"} · ${ws?.title || resp.hoja}</div>
         </div>
         <div style="text-align:right">
           <div class="resp-date">${fecha}</div>
