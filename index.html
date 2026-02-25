@@ -798,14 +798,20 @@ async function submitWorksheet() {
   let ok = false;
   if (SHEET_URL && SHEET_URL !== "PEGA_AQUÍ_TU_URL_DE_APPS_SCRIPT") {
     try {
-      await fetch(SHEET_URL, {
+      // Usar URLSearchParams para evitar problemas CORS con GitHub Pages
+      const params = new URLSearchParams();
+      params.append("data", JSON.stringify(payload));
+      const response = await fetch(SHEET_URL, {
         method: "POST",
         mode: "no-cors",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(payload),
+        body: params,
       });
       ok = true;
-    } catch(e) { ok = false; }
+      console.log("✅ Enviado a Google Sheets");
+    } catch(e) {
+      console.error("❌ Error enviando a Sheets:", e);
+      ok = false;
+    }
   } else {
     // Demo mode: save to localStorage so teacher panel works without Sheets
     try {
