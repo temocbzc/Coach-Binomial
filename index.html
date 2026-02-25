@@ -455,7 +455,7 @@
 
 // ── CONFIG ───────────────────────────────────────────────────────────────
 // 👇 PEGA AQUÍ LA URL DE TU GOOGLE APPS SCRIPT WEB APP
-const SHEET_URL = "https://script.google.com/macros/s/AKfycbz_6V1rXkQACGFxYBBbH_77SAVI7HIDu46As-4Y8UGdTEi0vNtKoFr12NjLVvZmIzvi/exec";
+const SHEET_URL = "PEGA_AQUÍ_TU_URL_DE_APPS_SCRIPT";
 
 const TEACHER_PASSWORD = "profesorcch";
 
@@ -808,10 +808,16 @@ async function submitWorksheet() {
     } catch(e) { ok = false; }
   } else {
     // Demo mode: save to localStorage so teacher panel works without Sheets
-    const stored = JSON.parse(localStorage.getItem("cb_responses") || "[]");
-    stored.push(payload);
-    localStorage.setItem("cb_responses", JSON.stringify(stored));
-    ok = true;
+    try {
+      const stored = JSON.parse(localStorage.getItem("cb_responses") || "[]");
+      stored.push(payload);
+      localStorage.setItem("cb_responses", JSON.stringify(stored));
+      console.log("✅ Guardado en localStorage. Total:", stored.length, "Payload:", payload);
+      ok = true;
+    } catch(e) {
+      console.error("❌ Error guardando en localStorage:", e);
+      ok = false;
+    }
   }
 
   btn.disabled = false;
@@ -841,11 +847,27 @@ function showTab(tab) {
 // ── LOAD RESPONSES (from localStorage in demo mode) ───────────────────────
 function loadResponses() {
   let data = [];
-  try { data = JSON.parse(localStorage.getItem("cb_responses") || "[]"); } catch(e) {}
+  try {
+    const raw = localStorage.getItem("cb_responses");
+    console.log("localStorage raw:", raw);
+    data = JSON.parse(raw || "[]");
+  } catch(e) { console.error("Error leyendo localStorage:", e); }
   STATE.allResponses = data.sort((a,b) => new Date(b.fecha) - new Date(a.fecha));
+  console.log("Total respuestas cargadas:", STATE.allResponses.length);
+  // Populate selects FIRST so renderBrowse has the options ready
+  populateFilterSelects();
   renderOverview();
   renderBrowse();
-  populateFilterSelects();
+  // Show empty state hint if no data
+  if (STATE.allResponses.length === 0) {
+    document.getElementById("stat-grid").innerHTML = `
+      <div style="grid-column:1/-1;text-align:center;padding:30px;color:var(--t3);font-size:14px">
+        📭 No hay respuestas todavía.<br>
+        <span style="font-size:12px">Los equipos deben llenar y enviar las hojas de trabajo desde la vista Alumno.</span>
+      </div>`;
+    document.getElementById("ws-bars").innerHTML = "<p style='color:var(--t3);font-size:13px'>Sin datos todavía.</p>";
+    document.getElementById("session-bars").innerHTML = "<p style='color:var(--t3);font-size:13px'>Sin datos todavía.</p>";
+  }
 }
 
 // ── OVERVIEW ──────────────────────────────────────────────────────────────
