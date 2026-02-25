@@ -1,0 +1,1075 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0"/>
+<title>Coach Binomial — CCH UNAM</title>
+<style>
+  /* ── RESET & BASE ── */
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  :root {
+    --bg:       #0f1623;
+    --surface:  #161f30;
+    --card:     #1c2840;
+    --border:   #243352;
+    --accent:   #f5a623;
+    --accentD:  #c4831a;
+    --teal:     #38bdf8;
+    --green:    #4ade80;
+    --purple:   #a78bfa;
+    --red:      #f87171;
+    --t1:       #f0f4ff;
+    --t2:       #8ea3c3;
+    --t3:       #4a6080;
+  }
+  html { font-size: 16px; }
+  body {
+    background: var(--bg);
+    color: var(--t1);
+    font-family: Georgia, 'Times New Roman', serif;
+    min-height: 100vh;
+    -webkit-font-smoothing: antialiased;
+  }
+  /* ── HEADER ── */
+  #app-header {
+    background: linear-gradient(135deg, var(--surface), var(--card));
+    border-bottom: 2px solid var(--accent);
+    padding: 14px 20px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 10px;
+    position: sticky;
+    top: 0;
+    z-index: 200;
+  }
+  .logo { display: flex; align-items: center; gap: 10px; }
+  .logo-icon {
+    width: 40px; height: 40px;
+    background: linear-gradient(135deg, var(--accent), var(--accentD));
+    border-radius: 10px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 20px; font-weight: bold; color: #fff;
+    box-shadow: 0 0 16px #f5a62355;
+    flex-shrink: 0;
+  }
+  .logo-title { font-size: 17px; font-weight: bold; color: var(--t1); }
+  .logo-sub   { font-size: 11px; color: var(--t2); margin-top: 1px; }
+  .header-nav { display: flex; gap: 8px; }
+  .nav-btn {
+    padding: 7px 14px; border-radius: 8px; border: 1px solid var(--border);
+    background: transparent; color: var(--t2); cursor: pointer;
+    font-size: 13px; font-family: inherit; transition: all .2s;
+  }
+  .nav-btn.active {
+    border-color: var(--accent); background: #f5a62322; color: var(--accent);
+  }
+  /* ── CONTAINER ── */
+  .container { max-width: 680px; margin: 0 auto; padding: 24px 16px 60px; }
+  /* ── CARDS ── */
+  .card {
+    background: var(--card); border: 1px solid var(--border);
+    border-radius: 14px; padding: 22px; margin-bottom: 18px;
+  }
+  /* ── TYPOGRAPHY ── */
+  .section-title { font-size: 21px; font-weight: bold; margin-bottom: 4px; }
+  .section-sub   { font-size: 13px; color: var(--t2); margin-bottom: 22px; }
+  .card-title    { font-size: 16px; font-weight: bold; margin-bottom: 14px; }
+  .pill {
+    display: inline-block; border-radius: 20px; padding: 3px 11px;
+    font-size: 11px; margin-bottom: 14px; border: 1px solid;
+  }
+  /* ── FORMS ── */
+  .field-group { margin-bottom: 16px; }
+  label.field-label {
+    display: block; font-size: 13px; color: var(--t2);
+    margin-bottom: 6px; line-height: 1.5;
+  }
+  input[type=text], input[type=password], textarea, select {
+    width: 100%; background: var(--surface); border: 1px solid var(--border);
+    border-radius: 8px; padding: 10px 12px; color: var(--t1);
+    font-size: 14px; font-family: inherit; outline: none;
+    transition: border-color .2s;
+  }
+  input[type=text]:focus, input[type=password]:focus,
+  textarea:focus, select:focus { border-color: var(--accent); }
+  textarea { resize: vertical; min-height: 88px; line-height: 1.6; }
+  select { cursor: pointer; }
+  /* ── BUTTONS ── */
+  .btn {
+    display: inline-flex; align-items: center; gap: 8px;
+    padding: 11px 22px; border: none; border-radius: 10px;
+    color: #fff; font-size: 15px; font-family: inherit;
+    font-weight: bold; cursor: pointer;
+    box-shadow: 0 4px 14px #0004; transition: transform .15s, opacity .15s;
+  }
+  .btn:hover { opacity: .9; transform: translateY(-1px); }
+  .btn:active { transform: translateY(0); }
+  .btn:disabled { opacity: .5; cursor: not-allowed; transform: none; }
+  .btn-accent  { background: linear-gradient(135deg, var(--accent), var(--accentD)); }
+  .btn-teal    { background: linear-gradient(135deg, var(--teal), #0ea5e9); }
+  .btn-green   { background: linear-gradient(135deg, var(--green), #22c55e); }
+  .btn-red     { background: linear-gradient(135deg, var(--red), #ef4444); }
+  .btn-outline {
+    display: inline-flex; align-items: center; gap: 6px;
+    padding: 9px 18px; background: transparent; border: 1px solid var(--border);
+    border-radius: 10px; color: var(--t2); font-size: 13px;
+    font-family: inherit; cursor: pointer; transition: border-color .2s;
+  }
+  .btn-outline:hover { border-color: var(--t2); }
+  /* ── ALERTS ── */
+  .alert-success {
+    background: #4ade8018; border: 1px solid #4ade8044;
+    border-radius: 10px; padding: 13px 16px; color: var(--green);
+    font-size: 14px; text-align: center; margin-top: 14px;
+  }
+  .alert-error {
+    background: #f8717118; border: 1px solid #f8717144;
+    border-radius: 10px; padding: 13px 16px; color: var(--red);
+    font-size: 14px; margin-top: 14px;
+  }
+  .alert-info {
+    background: #38bdf818; border: 1px solid #38bdf844;
+    border-radius: 10px; padding: 13px 16px; color: var(--teal);
+    font-size: 14px; margin-top: 14px;
+  }
+  /* ── WORKSHEET GRID ── */
+  .ws-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));
+    gap: 10px; margin-bottom: 22px;
+  }
+  .ws-card {
+    background: var(--surface); border: 2px solid var(--border);
+    border-radius: 12px; padding: 13px 10px; cursor: pointer;
+    text-align: center; transition: all .2s; user-select: none;
+  }
+  .ws-card:hover { transform: translateY(-2px); }
+  .ws-card-title { font-size: 15px; font-weight: bold; margin-bottom: 4px; }
+  .ws-card-sub   { font-size: 11px; color: var(--t3); line-height: 1.4; }
+  /* ── DIVIDER ── */
+  .divider { height: 1px; background: var(--border); margin: 18px 0; }
+  /* ── STAT GRID ── */
+  .stat-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+    gap: 12px; margin-bottom: 22px;
+  }
+  .stat-card {
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: 12px; padding: 18px; text-align: center;
+  }
+  .stat-num   { font-size: 30px; font-weight: bold; line-height: 1; margin-bottom: 6px; }
+  .stat-label { font-size: 12px; color: var(--t3); line-height: 1.4; }
+  /* ── BAR ── */
+  .bar-row { margin-bottom: 10px; }
+  .bar-meta {
+    display: flex; justify-content: space-between;
+    font-size: 12px; color: var(--t2); margin-bottom: 4px;
+  }
+  .bar-track {
+    height: 8px; background: var(--border); border-radius: 4px; overflow: hidden;
+  }
+  .bar-fill {
+    height: 100%; border-radius: 4px; transition: width .6s ease;
+  }
+  /* ── RESPONSE CARD ── */
+  .resp-card {
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: 12px; padding: 16px; margin-bottom: 12px;
+  }
+  .resp-header {
+    display: flex; justify-content: space-between;
+    align-items: flex-start; flex-wrap: wrap; gap: 8px; margin-bottom: 10px;
+  }
+  .resp-name  { font-size: 15px; font-weight: bold; }
+  .resp-date  { font-size: 11px; color: var(--t3); }
+  .field-answer { margin-bottom: 12px; }
+  .field-q    { font-size: 12px; color: var(--t3); margin-bottom: 3px; }
+  .field-a {
+    font-size: 13px; background: var(--card); border-radius: 6px;
+    padding: 8px 10px; line-height: 1.6; white-space: pre-wrap;
+  }
+  .field-a.empty { color: var(--t3); font-style: italic; }
+  /* ── TEAM BADGE ── */
+  .team-preview {
+    background: #f5a62311; border: 1px solid #f5a62333;
+    border-radius: 8px; padding: 10px 14px; font-size: 13px;
+    color: var(--accent); margin-bottom: 16px;
+  }
+  /* ── ANALYSIS OUTPUT ── */
+  #ai-output {
+    font-size: 13px; line-height: 1.9; white-space: pre-wrap;
+    color: var(--t1);
+  }
+  #ai-output h2, #ai-output h3 {
+    color: var(--teal); margin: 18px 0 8px; font-size: 14px;
+  }
+  /* ── LOADING SPINNER ── */
+  .spinner {
+    display: inline-block; width: 16px; height: 16px;
+    border: 2px solid #ffffff44; border-top-color: #fff;
+    border-radius: 50%; animation: spin .7s linear infinite;
+  }
+  @keyframes spin { to { transform: rotate(360deg); } }
+  /* ── HIDDEN ── */
+  .hidden { display: none !important; }
+  /* ── TABS ── */
+  .tab-bar { display: flex; gap: 8px; margin-bottom: 22px; flex-wrap: wrap; }
+  .tab-btn {
+    padding: 8px 16px; border-radius: 8px; border: 1px solid var(--border);
+    background: transparent; color: var(--t2); cursor: pointer;
+    font-size: 13px; font-family: inherit; transition: all .2s;
+  }
+  .tab-btn.active {
+    border-color: var(--teal); background: #38bdf822; color: var(--teal);
+  }
+  /* ── RESPONSIVE ── */
+  @media (max-width: 480px) {
+    .section-title { font-size: 18px; }
+    .btn { padding: 10px 18px; font-size: 14px; }
+    #app-header { padding: 10px 14px; }
+  }
+  /* ── PASSWORD SCREEN ── */
+  #pw-screen {
+    display: flex; flex-direction: column; align-items: center;
+    justify-content: center; min-height: 60vh; gap: 16px;
+  }
+  #pw-screen .card { width: 100%; max-width: 360px; }
+</style>
+</head>
+<body>
+
+<!-- ═══════════════════════════════════════════════════════════════
+     HEADER
+════════════════════════════════════════════════════════════════ -->
+<header id="app-header">
+  <div class="logo">
+    <div class="logo-icon">∑</div>
+    <div>
+      <div class="logo-title">Coach Binomial</div>
+      <div class="logo-sub">CCH UNAM · Estadística y Probabilidad II</div>
+    </div>
+  </div>
+  <nav class="header-nav">
+    <button class="nav-btn active" id="btn-alumno" onclick="switchView('student')">👩‍🎓 Alumno</button>
+    <button class="nav-btn"        id="btn-docente" onclick="switchView('teacher')">👩‍🏫 Docente</button>
+  </nav>
+</header>
+
+<!-- ═══════════════════════════════════════════════════════════════
+     STUDENT VIEW
+════════════════════════════════════════════════════════════════ -->
+<div id="view-student">
+
+  <!-- STEP 1: Identify team -->
+  <div id="step-identify" class="container">
+    <div style="text-align:center;margin-bottom:28px;padding-top:12px">
+      <div style="font-size:48px;margin-bottom:10px">📊</div>
+      <div class="section-title">Coach Binomial</div>
+      <div class="section-sub" style="margin-bottom:0">Estadística y Probabilidad II — CCH UNAM</div>
+    </div>
+    <div class="card">
+      <div class="card-title">Datos del equipo</div>
+      <p style="font-size:13px;color:var(--t3);margin-bottom:18px">
+        El trabajo es en parejas. Registren ambos nombres.
+      </p>
+      <!-- Integrante 1 -->
+      <div class="field-group" style="display:flex;align-items:flex-start;gap:10px">
+        <div style="width:28px;height:28px;border-radius:50%;background:#f5a62322;border:2px solid var(--accent);display:flex;align-items:center;justify-content:center;font-size:13px;color:var(--accent);flex-shrink:0;margin-top:22px">1</div>
+        <div style="flex:1">
+          <div class="field-group">
+            <label class="field-label">Integrante 1 (nombre completo)</label>
+            <input type="text" id="s1-name" placeholder="Ej. María García López" oninput="updateTeamPreview()"/>
+          </div>
+        </div>
+      </div>
+      <!-- Integrante 2 -->
+      <div class="field-group" style="display:flex;align-items:flex-start;gap:10px">
+        <div style="width:28px;height:28px;border-radius:50%;background:#38bdf822;border:2px solid var(--teal);display:flex;align-items:center;justify-content:center;font-size:13px;color:var(--teal);flex-shrink:0;margin-top:22px">2</div>
+        <div style="flex:1">
+          <div class="field-group">
+            <label class="field-label">Integrante 2 (nombre completo)</label>
+            <input type="text" id="s2-name" placeholder="Ej. Juan Pérez Martínez" oninput="updateTeamPreview()"/>
+          </div>
+        </div>
+      </div>
+      <!-- Grupo -->
+      <div class="field-group">
+        <label class="field-label">Grupo</label>
+        <input type="text" id="s-group" placeholder="Ej. 601"/>
+      </div>
+      <!-- Team preview -->
+      <div id="team-preview" class="team-preview hidden"></div>
+      <button class="btn btn-accent" onclick="goToSelect()">Continuar →</button>
+    </div>
+  </div>
+
+  <!-- STEP 2: Select worksheet -->
+  <div id="step-select" class="container hidden">
+    <div style="margin-bottom:20px">
+      <div class="section-title" id="greeting-title">Hola, equipo 👋</div>
+      <div class="section-sub" id="greeting-sub">¿Cuál hoja de trabajo van a llenar?</div>
+    </div>
+    <div id="ws-list"></div>
+  </div>
+
+  <!-- STEP 3: Fill worksheet -->
+  <div id="step-fill" class="container hidden">
+    <button class="btn-outline" onclick="goBackToSelect()" style="margin-bottom:18px">← Volver</button>
+    <div id="fill-header" style="margin-bottom:20px"></div>
+    <div id="ht9-box" class="hidden card" style="border-color:#f8717144;margin-bottom:18px">
+      <div style="font-size:13px;color:var(--red);font-weight:bold;margin-bottom:8px">📋 Problema a revisar</div>
+      <div style="font-size:13px;color:var(--t2);line-height:1.8">
+        <strong style="color:var(--t1)">Problema original:</strong> En una preparatoria, el 70% de los alumnos lleva sus apuntes a clase. Si se elige a 8 alumnos al azar, ¿cuál es la probabilidad de que exactamente 5 lleven apuntes?<br><br>
+        <strong style="color:var(--t1)">Solución propuesta (con errores intencionales):</strong><br>
+        n = 8, &nbsp;p = 0.3, &nbsp;q = 0.7<br>
+        P(X=5) = C(8,5) × (0.3)⁵ × (0.7)³ = 56 × 0.00243 × 0.343 = 0.0467<br>
+        E(X) = n × q = 8 × 0.7 = 5.6<br>
+        Interpretación: Se esperan 5.6 alumnos <em>sin</em> apuntes.
+      </div>
+    </div>
+    <div class="card">
+      <div id="fields-container"></div>
+      <div id="submit-msg"></div>
+      <div style="margin-top:22px;display:flex;gap:10px;flex-wrap:wrap">
+        <button class="btn btn-accent" id="btn-submit" onclick="submitWorksheet()">✓ Enviar respuestas</button>
+        <button class="btn-outline" onclick="goBackToSelect()">Cancelar</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- STEP 4: Done -->
+  <div id="step-done" class="container hidden">
+    <div style="text-align:center;padding-top:40px">
+      <div style="font-size:60px;margin-bottom:18px">✅</div>
+      <div class="section-title">¡Respuestas enviadas!</div>
+      <p style="color:var(--t2);margin:12px 0 28px;line-height:1.8" id="done-msg"></p>
+      <div style="display:flex;gap:12px;justify-content:center;flex-wrap:wrap">
+        <button class="btn btn-accent" onclick="goBackToSelect()">Llenar otra hoja</button>
+        <button class="btn-outline" onclick="resetAll()">Cambiar equipo</button>
+      </div>
+    </div>
+  </div>
+
+</div><!-- /view-student -->
+
+
+<!-- ═══════════════════════════════════════════════════════════════
+     TEACHER VIEW
+════════════════════════════════════════════════════════════════ -->
+<div id="view-teacher" class="hidden">
+
+  <!-- Password screen -->
+  <div id="pw-screen" class="container">
+    <div class="card">
+      <div class="card-title" style="text-align:center">🔒 Acceso Docente</div>
+      <div class="field-group">
+        <label class="field-label">Contraseña</label>
+        <input type="password" id="pw-input" placeholder="Ingresa la contraseña"
+               onkeydown="if(event.key==='Enter') checkPassword()"/>
+      </div>
+      <div id="pw-error" class="alert-error hidden">Contraseña incorrecta.</div>
+      <button class="btn btn-accent" onclick="checkPassword()" style="width:100%;justify-content:center;margin-top:4px">Entrar</button>
+    </div>
+  </div>
+
+  <!-- Dashboard -->
+  <div id="teacher-dashboard" class="hidden container">
+    <div style="margin-bottom:20px;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px">
+      <div>
+        <div class="section-title">Panel Docente</div>
+        <div class="section-sub" style="margin-bottom:0">Análisis de respuestas — Distribución Binomial</div>
+      </div>
+      <button class="btn-outline" onclick="loadResponses()" style="font-size:12px">↻ Actualizar</button>
+    </div>
+
+    <!-- Tabs -->
+    <div class="tab-bar">
+      <button class="tab-btn active" id="tab-overview" onclick="showTab('overview')">📈 Resumen</button>
+      <button class="tab-btn"        id="tab-browse"   onclick="showTab('browse')">📋 Respuestas</button>
+      <button class="tab-btn"        id="tab-ai"       onclick="showTab('ai')">🤖 Análisis IA</button>
+    </div>
+
+    <!-- TAB: Overview -->
+    <div id="panel-overview">
+      <div class="stat-grid" id="stat-grid"></div>
+      <div class="card" id="card-ws-bars">
+        <div class="card-title">Entregas por hoja de trabajo</div>
+        <div id="ws-bars"></div>
+      </div>
+      <div class="card" id="card-session-bars">
+        <div class="card-title">Participación por sesión</div>
+        <div id="session-bars"></div>
+      </div>
+      <div class="card hidden" id="card-ht5">
+        <div class="card-title">HT 5 — Condiciones del modelo binomial</div>
+        <div id="ht5-bars"></div>
+      </div>
+    </div>
+
+    <!-- TAB: Browse -->
+    <div id="panel-browse" class="hidden">
+      <div style="display:flex;gap:10px;margin-bottom:16px;flex-wrap:wrap">
+        <select id="filter-ws" onchange="renderBrowse()" style="flex:1;min-width:140px">
+          <option value="all">Todas las hojas</option>
+        </select>
+        <select id="filter-group" onchange="renderBrowse()" style="flex:1;min-width:90px">
+          <option value="all">Todos los grupos</option>
+        </select>
+      </div>
+      <div id="browse-count" style="font-size:12px;color:var(--t3);margin-bottom:12px"></div>
+      <div id="browse-list"></div>
+    </div>
+
+    <!-- TAB: AI Analysis -->
+    <div id="panel-ai" class="hidden">
+      <div class="card">
+        <div class="card-title">Análisis cualitativo y cuantitativo con IA</div>
+        <p style="font-size:13px;color:var(--t2);margin-bottom:18px;line-height:1.7">
+          Genera un análisis pedagógico completo usando Claude. Identifica conceptos con mayor dificultad,
+          patrones de comprensión, y recomendaciones para el docente, basándose en las respuestas reales de los equipos.
+        </p>
+        <div id="ai-no-data" class="alert-error hidden">
+          No hay respuestas todavía. Espera a que los equipos envíen sus hojas.
+        </div>
+        <button class="btn btn-teal" id="btn-analyze" onclick="runAnalysis()">
+          🤖 Generar análisis con IA
+        </button>
+      </div>
+      <div id="ai-result-card" class="card hidden" style="border-color:#38bdf844">
+        <div style="font-size:14px;font-weight:bold;color:var(--teal);margin-bottom:14px">📊 Resultado del análisis</div>
+        <div id="ai-output"></div>
+      </div>
+    </div>
+
+  </div><!-- /teacher-dashboard -->
+</div><!-- /view-teacher -->
+
+
+<!-- ═══════════════════════════════════════════════════════════════
+     JAVASCRIPT
+════════════════════════════════════════════════════════════════ -->
+<script>
+
+// ── CONFIG ───────────────────────────────────────────────────────────────
+// 👇 PEGA AQUÍ LA URL DE TU GOOGLE APPS SCRIPT WEB APP
+const SHEET_URL = "https://script.google.com/macros/s/AKfycbz_6V1rXkQACGFxYBBbH_77SAVI7HIDu46As-4Y8UGdTEi0vNtKoFr12NjLVvZmIzvi/exec";
+
+const TEACHER_PASSWORD = "profesorcch";
+
+// ── WORKSHEET DATA ───────────────────────────────────────────────────────
+const WORKSHEETS = [
+  {
+    id:"ht1", title:"HT 1", session:"Sesión 1",
+    fullTitle:"¿Qué pasa cuando el azar solo tiene dos salidas?",
+    color:"#f5a623",
+    fields:[
+      {id:"q1a",  label:"1a) ¿Qué tendría que conocer tu amigo sobre la probabilidad de presionar 'posponer' cada mañana?", type:"textarea"},
+      {id:"q1b",  label:"1b) ¿Le bastaría con saber lo que hiciste ayer, o necesitaría algo más general? Explica.", type:"textarea"},
+      {id:"q2",   label:"2. ¿El resultado de cada día depende de lo que pasó el día anterior? Argumenta con un ejemplo.", type:"textarea"},
+      {id:"q3",   label:"3. Describe una situación cotidiana donde solo haya dos resultados posibles y se repita varias veces.", type:"textarea"},
+      {id:"q4",   label:"4. Si p='posponer'=0.3, ¿cuántas veces esperarías hacerlo en 20 días hábiles? ¿Cómo llegaste a ese número?", type:"textarea"},
+      {id:"refl", label:"💬 Reflexión: ¿Qué tienen en común todas las situaciones? ¿Qué hace especial a este tipo de experimentos?", type:"textarea"},
+    ]
+  },
+  {
+    id:"ht2", title:"HT 2", session:"Sesión 1",
+    fullTitle:"Bitácora — Sesión 1 con el Coach",
+    color:"#38bdf8",
+    fields:[
+      {id:"q1p",  label:"1. ¿Cuál fue la primera pregunta que te hizo el Coach?", type:"textarea"},
+      {id:"q1r",  label:"1. ¿Qué respondiste?", type:"textarea"},
+      {id:"q2",   label:"2. ¿Qué características debe tener un experimento de Bernoulli? (al menos dos)", type:"textarea"},
+      {id:"q3p",  label:"3. ¿Qué significa p? (con tus palabras)", type:"text"},
+      {id:"q3q",  label:"3. ¿Qué significa q? (con tus palabras)", type:"text"},
+      {id:"q4n",  label:"4. Valor de n en el ejemplo del Coach:", type:"text"},
+      {id:"q4p",  label:"4. Valor de p:", type:"text"},
+      {id:"q4q",  label:"4. Valor de q:", type:"text"},
+      {id:"q4ctx",label:"4. Contexto del ejemplo:", type:"textarea"},
+      {id:"q5",   label:"5. ¿Hubo momento en que no supieran qué responder? ¿Qué hicieron?", type:"textarea"},
+      {id:"r1",   label:"💭 ¿En qué se parecen las situaciones de hoy con los ejemplos del Coach?", type:"textarea"},
+      {id:"r2",   label:"💭 ¿Qué pregunta del Coach les costó más trabajo responder y por qué?", type:"textarea"},
+    ]
+  },
+  {
+    id:"ht3", title:"HT 3", session:"Sesión 2",
+    fullTitle:"Explorando todos los caminos posibles",
+    color:"#a78bfa",
+    fields:[
+      {id:"q1",  label:"1. ¿Cuántos resultados distintos son posibles al lanzar una moneda 4 veces? Explica.", type:"textarea"},
+      {id:"q2",  label:"2. Escribe al menos 4 resultados con exactamente 2 águilas.", type:"textarea"},
+      {id:"q3a", label:"3a) Total de resultados con exactamente 2 águilas:", type:"text"},
+      {id:"q3b", label:"3b) Total de resultados con exactamente 3 águilas:", type:"text"},
+      {id:"q3c", label:"3c) ¿Cómo los contaron?", type:"textarea"},
+      {id:"q4",  label:"4. ¿Qué herramienta matemática podría ayudarlos a contar sin listar todo?", type:"textarea"},
+    ]
+  },
+  {
+    id:"ht4", title:"HT 4", session:"Sesión 2",
+    fullTitle:"Construyendo la fórmula con el Coach",
+    color:"#f5a623",
+    fields:[
+      {id:"q1",  label:"1. Probabilidad de un resultado con 2 águilas y 2 soles (ej. AASS). Escribe el cálculo:", type:"textarea"},
+      {id:"q2",  label:"2. ¿Cuántos arreglos distintos hay con 2 águilas en 4 lanzamientos? (combinaciones)", type:"textarea"},
+      {id:"q3",  label:"3. Combinando lo anterior, ¿cuál es P(X=2)? Escribe la expresión:", type:"textarea"},
+      {id:"q4",  label:"4. ¿Cuántos arreglos distintos hay con 1 águila en 4 lanzamientos? (combinaciones)", type:"textarea"},
+      {id:"q5",  label:"5. Antes de ver la fórmula general, intenten escribirla (n lanzamientos, x águilas, prob p, q=1-p):", type:"textarea"},
+      {id:"q6",  label:"6. Fórmula final confirmada por el Coach — P(X=x) =", type:"textarea"},
+      {id:"q7",  label:"7. ¿Qué fue lo más sorprendente del proceso de deducción?", type:"textarea"},
+      {id:"refl",label:"💬 Si p=0.7 en lugar de 0.5, ¿cambiaría la fórmula? ¿Qué cambia y qué permanece?", type:"textarea"},
+    ]
+  },
+  {
+    id:"ht5", title:"HT 5", session:"Sesión 3",
+    fullTitle:"¿Cuándo aplica el modelo? Análisis previo",
+    color:"#4ade80",
+    fields:[
+      {id:"s1a", label:"Situación 1 (Gamer, 10 intentos, p=0.35): ¿Aplica el modelo binomial?", type:"select", options:["Sí","No"]},
+      {id:"s1j", label:"Situación 1 — Justificación:", type:"textarea"},
+      {id:"s2a", label:"Situación 2 (5 cartas sin reemplazo): ¿Aplica el modelo binomial?", type:"select", options:["Sí","No"]},
+      {id:"s2j", label:"Situación 2 — Justificación:", type:"textarea"},
+      {id:"s3a", label:"Situación 3 (30 de 50,000 piezas): ¿Aplica el modelo binomial?", type:"select", options:["Sí","No","Aproximadamente sí"]},
+      {id:"s3j", label:"Situación 3 — Argumenta: ¿por qué no exactamente pero sí aproximada?", type:"textarea"},
+    ]
+  },
+  {
+    id:"ht6", title:"HT 6", session:"Sesión 3",
+    fullTitle:"Lo que vi en el simulador",
+    color:"#38bdf8",
+    fields:[
+      {id:"e1f", label:"n=10, p=0.5 — Describe la forma del histograma:", type:"textarea"},
+      {id:"e1e", label:"n=10, p=0.5 — ¿Qué pasa con E(X)?", type:"text"},
+      {id:"e2f", label:"n=10, p=0.2 — Describe la forma del histograma:", type:"textarea"},
+      {id:"e2e", label:"n=10, p=0.2 — ¿Qué pasa con E(X)?", type:"text"},
+      {id:"e3f", label:"n=10, p=0.8 — Describe la forma del histograma:", type:"textarea"},
+      {id:"e3e", label:"n=10, p=0.8 — ¿Qué pasa con E(X)?", type:"text"},
+      {id:"e4f", label:"n=30, p=0.5 — Describe la forma del histograma:", type:"textarea"},
+      {id:"e4e", label:"n=30, p=0.5 — ¿Qué pasa con E(X)?", type:"text"},
+      {id:"cp",  label:"¿Qué concluyen sobre la relación entre p y la simetría de la distribución?", type:"textarea"},
+      {id:"cn",  label:"¿Por qué la distribución es más simétrica cuando p=0.5? ¿Qué tiene que ver n con la amplitud?", type:"textarea"},
+    ]
+  },
+  {
+    id:"ht7", title:"HT 7", session:"Sesión 4",
+    fullTitle:"Mis fórmulas a la mano",
+    color:"#a78bfa",
+    fields:[
+      {id:"cond", label:"Condiciones para que X ~ B(n,p): (escriban de memoria)", type:"textarea"},
+      {id:"fp",   label:"Fórmula de probabilidad P(X=x) =", type:"textarea"},
+      {id:"fex",  label:"Valor esperado E(X) =", type:"text"},
+      {id:"fde",  label:"Desviación estándar DE(X) =", type:"text"},
+    ]
+  },
+  {
+    id:"ht8", title:"HT 8", session:"Sesión 4",
+    fullTitle:"Resolviendo los problemas del Coach",
+    color:"#f5a623",
+    fields:[
+      {id:"p1e",   label:"Problema 1 — Cópialo del chat del Coach:", type:"textarea"},
+      {id:"p1n",   label:"Problema 1 — n =", type:"text"},
+      {id:"p1p",   label:"Problema 1 — p =", type:"text"},
+      {id:"p1q",   label:"Problema 1 — q =", type:"text"},
+      {id:"p1pr",  label:"Problema 1 — Procedimiento y cálculo:", type:"textarea"},
+      {id:"p1ex",  label:"Problema 1 — E(X) = np =", type:"text"},
+      {id:"p1exi", label:"Problema 1 — Interpretación de E(X):", type:"textarea"},
+      {id:"p1de",  label:"Problema 1 — DE(X) = √npq =", type:"text"},
+      {id:"p1dei", label:"Problema 1 — Interpretación de DE(X):", type:"textarea"},
+      {id:"p1ret", label:"Problema 1 — Retroalimentación del Coach:", type:"textarea"},
+      {id:"p2e",   label:"Problema 2 — Cópialo del chat del Coach:", type:"textarea"},
+      {id:"p2n",   label:"Problema 2 — n =", type:"text"},
+      {id:"p2p",   label:"Problema 2 — p =", type:"text"},
+      {id:"p2q",   label:"Problema 2 — q =", type:"text"},
+      {id:"p2pr",  label:"Problema 2 — Procedimiento y cálculo:", type:"textarea"},
+      {id:"p2ex",  label:"Problema 2 — E(X) = np =", type:"text"},
+      {id:"p2exi", label:"Problema 2 — Interpretación de E(X):", type:"textarea"},
+      {id:"p2de",  label:"Problema 2 — DE(X) = √npq =", type:"text"},
+      {id:"p2dei", label:"Problema 2 — Interpretación de DE(X):", type:"textarea"},
+      {id:"p2ret", label:"Problema 2 — Retroalimentación del Coach:", type:"textarea"},
+      {id:"refl",  label:"💬 ¿Qué diferencia hay entre calcular E(X) e interpretarlo? Definición propia de E(X):", type:"textarea"},
+    ]
+  },
+  {
+    id:"ht9", title:"HT 9", session:"Sesión 5",
+    fullTitle:"¡El Coach necesita tu ayuda!",
+    color:"#f87171",
+    fields:[
+      {id:"err",  label:"1. Lista todos los errores que encuentren (puede haber más de uno):", type:"textarea"},
+      {id:"sol",  label:"2. Escribe la solución correcta completa:", type:"textarea"},
+      {id:"int",  label:"3. Interpretación correcta de E(X) en el contexto del problema:", type:"textarea"},
+    ]
+  },
+  {
+    id:"ht10", title:"HT 10", session:"Sesión 5",
+    fullTitle:"Retroalimentación final y cierre",
+    color:"#4ade80",
+    fields:[
+      {id:"fort",  label:"Mis fortalezas según el Coach:", type:"textarea"},
+      {id:"mej",   label:"Mis áreas de mejora según el Coach:", type:"textarea"},
+      {id:"mq",    label:"🗺️ ¿Qué es la distribución binomial?", type:"textarea"},
+      {id:"mc",    label:"🗺️ ¿Cuándo se puede usar?", type:"textarea"},
+      {id:"mf",    label:"🗺️ ¿Cómo se calcula P(X=x)?", type:"textarea"},
+      {id:"me",    label:"🗺️ ¿Qué nos dicen E(X) y DE(X)?", type:"textarea"},
+      {id:"sit",   label:"Situación de su propia vida donde aplicarían el modelo binomial:", type:"textarea"},
+      {id:"ia",    label:"¿Qué aprendieron sobre el uso de la IA como herramienta? ¿Qué les gustó y cambiarían?", type:"textarea"},
+    ]
+  },
+];
+
+// ── STATE ─────────────────────────────────────────────────────────────────
+let STATE = {
+  view: "student",          // student | teacher
+  step: "identify",         // identify | select | fill | done
+  student1: "", student2: "", group: "",
+  selectedWS: null,
+  answers: {},
+  teacherAuth: false,
+  allResponses: [],
+  activeTab: "overview",
+  expandedResp: null,
+};
+
+function teamName() {
+  const s2 = STATE.student2.trim();
+  return s2 ? `${STATE.student1.trim()} & ${s2}` : STATE.student1.trim();
+}
+
+// ── VIEW SWITCHING ────────────────────────────────────────────────────────
+function switchView(v) {
+  STATE.view = v;
+  document.getElementById("view-student").classList.toggle("hidden", v !== "student");
+  document.getElementById("view-teacher").classList.toggle("hidden", v !== "teacher");
+  document.getElementById("btn-alumno").classList.toggle("active", v === "student");
+  document.getElementById("btn-docente").classList.toggle("active", v === "teacher");
+  if (v === "teacher" && !STATE.teacherAuth) {
+    document.getElementById("pw-screen").classList.remove("hidden");
+    document.getElementById("teacher-dashboard").classList.add("hidden");
+  }
+}
+
+// ── PASSWORD ──────────────────────────────────────────────────────────────
+function checkPassword() {
+  const val = document.getElementById("pw-input").value;
+  if (val === TEACHER_PASSWORD) {
+    STATE.teacherAuth = true;
+    document.getElementById("pw-screen").classList.add("hidden");
+    document.getElementById("teacher-dashboard").classList.remove("hidden");
+    loadResponses();
+  } else {
+    document.getElementById("pw-error").classList.remove("hidden");
+    document.getElementById("pw-input").value = "";
+  }
+}
+
+// ── STUDENT STEPS ─────────────────────────────────────────────────────────
+function showStudentStep(step) {
+  ["identify","select","fill","done"].forEach(s =>
+    document.getElementById(`step-${s}`).classList.toggle("hidden", s !== step)
+  );
+  STATE.step = step;
+  window.scrollTo(0,0);
+}
+
+function updateTeamPreview() {
+  const s1 = document.getElementById("s1-name").value.trim();
+  const s2 = document.getElementById("s2-name").value.trim();
+  const preview = document.getElementById("team-preview");
+  if (s1 && s2) {
+    preview.innerHTML = `🤝 Equipo: <strong>${s1} &amp; ${s2}</strong>`;
+    preview.classList.remove("hidden");
+  } else {
+    preview.classList.add("hidden");
+  }
+}
+
+function goToSelect() {
+  const s1 = document.getElementById("s1-name").value.trim();
+  const grp = document.getElementById("s-group").value.trim();
+  if (!s1 || !grp) { alert("Por favor ingresa al menos el nombre del Integrante 1 y el grupo."); return; }
+  STATE.student1 = s1;
+  STATE.student2 = document.getElementById("s2-name").value.trim();
+  STATE.group    = grp;
+  renderWorksheetSelector();
+  document.getElementById("greeting-title").textContent = `Hola, equipo 👋`;
+  document.getElementById("greeting-sub").textContent   = `${teamName()} · Grupo ${STATE.group} — ¿Cuál hoja van a llenar?`;
+  showStudentStep("select");
+}
+
+function renderWorksheetSelector() {
+  const sessions = [...new Set(WORKSHEETS.map(w => w.session))];
+  let html = "";
+  for (const session of sessions) {
+    html += `<div style="font-size:12px;color:var(--t3);text-transform:uppercase;letter-spacing:1px;margin-bottom:9px">${session}</div>`;
+    html += `<div class="ws-grid">`;
+    for (const ws of WORKSHEETS.filter(w => w.session === session)) {
+      html += `<div class="ws-card" onclick="selectWS('${ws.id}')"
+                    style="border-color:${ws.color}33">
+                 <div class="ws-card-title" style="color:${ws.color}">${ws.title}</div>
+                 <div class="ws-card-sub">${ws.fullTitle}</div>
+               </div>`;
+    }
+    html += `</div>`;
+  }
+  document.getElementById("ws-list").innerHTML = html;
+}
+
+function selectWS(id) {
+  STATE.selectedWS = id;
+  STATE.answers = {};
+  const ws = WORKSHEETS.find(w => w.id === id);
+
+  // Header
+  document.getElementById("fill-header").innerHTML = `
+    <span class="pill" style="color:${ws.color};border-color:${ws.color}55;background:${ws.color}18">${ws.session}</span>
+    <div class="section-title">${ws.title}: ${ws.fullTitle}</div>
+    <div class="section-sub" style="margin-bottom:0">🤝 ${teamName()} · Grupo ${STATE.group}</div>`;
+
+  // HT9 problem box
+  document.getElementById("ht9-box").classList.toggle("hidden", id !== "ht9");
+
+  // Build fields
+  let html = "";
+  for (const f of ws.fields) {
+    html += `<div class="field-group">
+               <label class="field-label">${f.label}</label>`;
+    if (f.type === "textarea") {
+      html += `<textarea id="f_${f.id}" placeholder="Escribe tu respuesta aquí..." oninput="captureAnswer('${f.id}',this.value)"></textarea>`;
+    } else if (f.type === "select") {
+      html += `<select id="f_${f.id}" onchange="captureAnswer('${f.id}',this.value)">
+                 <option value="">— Elige una opción —</option>
+                 ${f.options.map(o => `<option>${o}</option>`).join("")}
+               </select>`;
+    } else {
+      html += `<input type="text" id="f_${f.id}" placeholder="Tu respuesta..." oninput="captureAnswer('${f.id}',this.value)"/>`;
+    }
+    html += `</div>`;
+  }
+  document.getElementById("fields-container").innerHTML = html;
+  document.getElementById("submit-msg").innerHTML = "";
+  document.getElementById("btn-submit").disabled = false;
+  document.getElementById("btn-submit").innerHTML = "✓ Enviar respuestas";
+  showStudentStep("fill");
+}
+
+function captureAnswer(fieldId, value) {
+  STATE.answers[fieldId] = value;
+}
+
+function goBackToSelect() {
+  renderWorksheetSelector();
+  showStudentStep("select");
+}
+
+function resetAll() {
+  STATE.student1 = ""; STATE.student2 = ""; STATE.group = "";
+  STATE.answers = {}; STATE.selectedWS = null;
+  document.getElementById("s1-name").value = "";
+  document.getElementById("s2-name").value = "";
+  document.getElementById("s-group").value = "";
+  document.getElementById("team-preview").classList.add("hidden");
+  showStudentStep("identify");
+}
+
+async function submitWorksheet() {
+  const ws = WORKSHEETS.find(w => w.id === STATE.selectedWS);
+  const textFields = ws.fields.filter(f => f.type !== "select");
+  const filled = textFields.filter(f => (STATE.answers[f.id] || "").trim().length > 0);
+  if (filled.length < Math.ceil(textFields.length * 0.5)) {
+    document.getElementById("submit-msg").innerHTML =
+      `<div class="alert-error">Por favor completa al menos la mitad de los campos antes de enviar.</div>`;
+    return;
+  }
+
+  const btn = document.getElementById("btn-submit");
+  btn.disabled = true;
+  btn.innerHTML = `<span class="spinner"></span> Enviando...`;
+  document.getElementById("submit-msg").innerHTML = "";
+
+  const payload = {
+    equipo: teamName(),
+    grupo: STATE.group,
+    hoja: STATE.selectedWS,
+    hojaLabel: ws.title + ": " + ws.fullTitle,
+    fecha: new Date().toISOString(),
+    respuestas: STATE.answers,
+  };
+
+  let ok = false;
+  if (SHEET_URL && SHEET_URL !== "PEGA_AQUÍ_TU_URL_DE_APPS_SCRIPT") {
+    try {
+      await fetch(SHEET_URL, {
+        method: "POST",
+        mode: "no-cors",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
+      });
+      ok = true;
+    } catch(e) { ok = false; }
+  } else {
+    // Demo mode: save to localStorage so teacher panel works without Sheets
+    const stored = JSON.parse(localStorage.getItem("cb_responses") || "[]");
+    stored.push(payload);
+    localStorage.setItem("cb_responses", JSON.stringify(stored));
+    ok = true;
+  }
+
+  btn.disabled = false;
+  btn.innerHTML = "✓ Enviar respuestas";
+
+  if (ok) {
+    const ws = WORKSHEETS.find(w => w.id === STATE.selectedWS);
+    document.getElementById("done-msg").innerHTML =
+      `<strong>${ws.title}</strong> guardada correctamente.<br>
+       <span style="color:var(--t3)">Tu docente podrá ver las respuestas en el panel.</span>`;
+    showStudentStep("done");
+  } else {
+    document.getElementById("submit-msg").innerHTML =
+      `<div class="alert-error">No se pudo conectar con Google Sheets. Verifica tu URL o intenta de nuevo.</div>`;
+  }
+}
+
+// ── TEACHER TABS ──────────────────────────────────────────────────────────
+function showTab(tab) {
+  ["overview","browse","ai"].forEach(t => {
+    document.getElementById(`panel-${t}`).classList.toggle("hidden", t !== tab);
+    document.getElementById(`tab-${t}`).classList.toggle("active", t === tab);
+  });
+  STATE.activeTab = tab;
+}
+
+// ── LOAD RESPONSES (from localStorage in demo mode) ───────────────────────
+function loadResponses() {
+  let data = [];
+  try { data = JSON.parse(localStorage.getItem("cb_responses") || "[]"); } catch(e) {}
+  STATE.allResponses = data.sort((a,b) => new Date(b.fecha) - new Date(a.fecha));
+  renderOverview();
+  renderBrowse();
+  populateFilterSelects();
+}
+
+// ── OVERVIEW ──────────────────────────────────────────────────────────────
+function renderOverview() {
+  const responses = STATE.allResponses;
+  const teams = new Set(responses.map(r => `${r.equipo}__${r.grupo}`)).size;
+  const groups = [...new Set(responses.map(r => r.grupo))].length;
+  const completion = teams > 0
+    ? Math.round((responses.length / teams / WORKSHEETS.length) * 100) : 0;
+
+  document.getElementById("stat-grid").innerHTML = `
+    <div class="stat-card"><div class="stat-num" style="color:var(--accent)">${teams}</div><div class="stat-label">Equipos participantes</div></div>
+    <div class="stat-card"><div class="stat-num" style="color:var(--teal)">${responses.length}</div><div class="stat-label">Hojas enviadas</div></div>
+    <div class="stat-card"><div class="stat-num" style="color:var(--green)">${groups}</div><div class="stat-label">Grupos</div></div>
+    <div class="stat-card"><div class="stat-num" style="color:var(--purple)">${completion}%</div><div class="stat-label">Completitud promedio</div></div>
+  `;
+
+  // WS bars
+  let wsBars = "";
+  for (const ws of WORKSHEETS) {
+    const cnt = new Set(responses.filter(r => r.hoja === ws.id).map(r => `${r.equipo}__${r.grupo}`)).size;
+    const pct = teams > 0 ? (cnt/teams)*100 : 0;
+    wsBars += `<div class="bar-row">
+      <div class="bar-meta"><span>${ws.title}: ${ws.fullTitle.slice(0,38)}${ws.fullTitle.length>38?"...":""}</span><span style="color:${ws.color}">${cnt} eq.</span></div>
+      <div class="bar-track"><div class="bar-fill" style="width:${pct}%;background:${ws.color}"></div></div>
+    </div>`;
+  }
+  document.getElementById("ws-bars").innerHTML = wsBars || "<p style='color:var(--t3);font-size:13px'>Sin datos todavía.</p>";
+
+  // Session bars
+  const sessions = ["Sesión 1","Sesión 2","Sesión 3","Sesión 4","Sesión 5"];
+  let sessBars = "";
+  for (const s of sessions) {
+    const ids = WORKSHEETS.filter(w => w.session === s).map(w => w.id);
+    const cnt = new Set(responses.filter(r => ids.includes(r.hoja)).map(r => `${r.equipo}__${r.grupo}`)).size;
+    const pct = teams > 0 ? (cnt/teams)*100 : 0;
+    sessBars += `<div class="bar-row">
+      <div class="bar-meta"><span>${s}</span><span style="color:var(--teal)">${cnt} equipos</span></div>
+      <div class="bar-track"><div class="bar-fill" style="width:${pct}%;background:var(--teal)"></div></div>
+    </div>`;
+  }
+  document.getElementById("session-bars").innerHTML = sessBars;
+
+  // HT5 analysis
+  const ht5 = responses.filter(r => r.hoja === "ht5");
+  if (ht5.length > 0) {
+    document.getElementById("card-ht5").classList.remove("hidden");
+    const s1c = ht5.filter(r => r.respuestas.s1a === "Sí").length;
+    const s2c = ht5.filter(r => r.respuestas.s2a === "No").length;
+    const s3c = ht5.filter(r => ["No","Aproximadamente sí"].includes(r.respuestas.s3a)).length;
+    const items = [
+      {label:"Situación 1 — Respuesta correcta: Sí", val:s1c, color:"var(--green)"},
+      {label:"Situación 2 — Respuesta correcta: No", val:s2c, color:"var(--accent)"},
+      {label:"Situación 3 — Respuesta correcta: Aprox. sí", val:s3c, color:"var(--purple)"},
+    ];
+    let ht5html = `<div style="font-size:12px;color:var(--t3);margin-bottom:14px">${ht5.length} respuesta(s) recibida(s)</div>`;
+    for (const item of items) {
+      const pct = (item.val/ht5.length)*100;
+      ht5html += `<div class="bar-row">
+        <div class="bar-meta"><span>${item.label}</span><span style="color:${item.color}">${item.val}/${ht5.length} (${Math.round(pct)}%)</span></div>
+        <div class="bar-track"><div class="bar-fill" style="width:${pct}%;background:${item.color}"></div></div>
+      </div>`;
+    }
+    document.getElementById("ht5-bars").innerHTML = ht5html;
+  }
+}
+
+// ── BROWSE ────────────────────────────────────────────────────────────────
+function populateFilterSelects() {
+  const wsSelect  = document.getElementById("filter-ws");
+  const grpSelect = document.getElementById("filter-group");
+  // Reset and repopulate WS
+  wsSelect.innerHTML = `<option value="all">Todas las hojas</option>`;
+  for (const ws of WORKSHEETS)
+    wsSelect.innerHTML += `<option value="${ws.id}">${ws.title}: ${ws.fullTitle.slice(0,35)}</option>`;
+  // Groups
+  const groups = [...new Set(STATE.allResponses.map(r => r.grupo))].sort();
+  grpSelect.innerHTML = `<option value="all">Todos los grupos</option>`;
+  for (const g of groups)
+    grpSelect.innerHTML += `<option value="${g}">Grupo ${g}</option>`;
+}
+
+function renderBrowse() {
+  const filterWS  = document.getElementById("filter-ws")?.value  || "all";
+  const filterGrp = document.getElementById("filter-group")?.value || "all";
+  const filtered = STATE.allResponses.filter(r =>
+    (filterWS  === "all" || r.hoja  === filterWS) &&
+    (filterGrp === "all" || r.grupo === filterGrp)
+  );
+  document.getElementById("browse-count").textContent = `${filtered.length} respuesta(s) encontrada(s)`;
+
+  if (filtered.length === 0) {
+    document.getElementById("browse-list").innerHTML =
+      `<div style="text-align:center;padding:40px;color:var(--t3)">No hay respuestas para los filtros seleccionados.</div>`;
+    return;
+  }
+
+  let html = "";
+  filtered.forEach((resp, i) => {
+    const ws = WORKSHEETS.find(w => w.id === resp.hoja);
+    const key = `resp_${i}`;
+    const expanded = STATE.expandedResp === key;
+    const fecha = new Date(resp.fecha).toLocaleDateString("es-MX",
+      {day:"2-digit",month:"short",hour:"2-digit",minute:"2-digit"});
+
+    html += `<div class="resp-card">
+      <div class="resp-header">
+        <div>
+          <div class="resp-name">🤝 ${resp.equipo}</div>
+          <div style="font-size:12px;color:var(--t3);margin-top:2px">Grupo ${resp.grupo} · ${ws?.title || resp.hoja}</div>
+        </div>
+        <div style="text-align:right">
+          <div class="resp-date">${fecha}</div>
+          <span class="pill" style="color:${ws?.color||"#f5a623"};border-color:${ws?.color||"#f5a623"}55;background:${ws?.color||"#f5a623"}18;margin-bottom:0;margin-top:4px;display:inline-block">${ws?.session||""}</span>
+        </div>
+      </div>
+      <button class="btn-outline" style="font-size:12px;padding:6px 12px" onclick="toggleResp('${key}',${i})">
+        ${expanded ? "▲ Ocultar" : "▼ Ver respuestas"}
+      </button>`;
+
+    if (expanded && ws) {
+      html += `<div style="margin-top:14px"><div class="divider"></div>`;
+      for (const f of ws.fields) {
+        const val = resp.respuestas[f.id] || "";
+        html += `<div class="field-answer">
+          <div class="field-q">${f.label}</div>
+          <div class="field-a ${val ? "" : "empty"}">${val || "Sin respuesta"}</div>
+        </div>`;
+      }
+      html += `</div>`;
+    }
+    html += `</div>`;
+  });
+  document.getElementById("browse-list").innerHTML = html;
+}
+
+function toggleResp(key, idx) {
+  STATE.expandedResp = STATE.expandedResp === key ? null : key;
+  renderBrowse();
+}
+
+// ── AI ANALYSIS ───────────────────────────────────────────────────────────
+async function runAnalysis() {
+  const responses = STATE.allResponses;
+  if (responses.length === 0) {
+    document.getElementById("ai-no-data").classList.remove("hidden");
+    return;
+  }
+  document.getElementById("ai-no-data").classList.add("hidden");
+
+  const btn = document.getElementById("btn-analyze");
+  btn.disabled = true;
+  btn.innerHTML = `<span class="spinner"></span> Analizando...`;
+  document.getElementById("ai-result-card").classList.add("hidden");
+
+  // Build summary for AI
+  const teams  = new Set(responses.map(r => `${r.equipo}__${r.grupo}`)).size;
+  const groups = [...new Set(responses.map(r => r.grupo))];
+  const wsComp = WORKSHEETS.map(w => ({
+    hoja: w.title,
+    entregas: new Set(responses.filter(r => r.hoja === w.id).map(r => r.equipo)).size
+  }));
+  const ht5 = responses.filter(r => r.hoja === "ht5");
+  const sample = responses.slice(0, 18).map(r => ({
+    equipo: r.equipo, grupo: r.grupo, hoja: r.hoja, respuestas: r.respuestas
+  }));
+
+  const summary = { equipos: teams, grupos: groups, hojas: wsComp,
+    ht5_analisis: {
+      total: ht5.length,
+      s1_correcto: ht5.filter(r => r.respuestas.s1a === "Sí").length,
+      s2_correcto: ht5.filter(r => r.respuestas.s2a === "No").length,
+      s3_correcto: ht5.filter(r => ["No","Aproximadamente sí"].includes(r.respuestas.s3a)).length,
+    },
+    muestra_respuestas: sample
+  };
+
+  try {
+    const res = await fetch("https://api.anthropic.com/v1/messages", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        model: "claude-sonnet-4-20250514",
+        max_tokens: 1500,
+        system: `Eres un experto en análisis pedagógico y didáctica de matemáticas para bachillerato (CCH UNAM, Estadística y Probabilidad II). 
+Analiza respuestas de estudiantes sobre distribución binomial. 
+Organiza tu informe con estos 5 apartados usando encabezados Markdown ##:
+1. Resumen cuantitativo
+2. Análisis cualitativo por sesión (señala qué comprenden bien y qué no)
+3. Conceptos con mayor dificultad (con evidencia de las respuestas)
+4. Fortalezas del grupo
+5. Recomendaciones pedagógicas concretas para el docente
+Responde en español, tono profesional pero accesible. Sé específico y útil.`,
+        messages: [{
+          role: "user",
+          content: `Analiza los siguientes datos de respuestas de estudiantes:\n\n${JSON.stringify(summary, null, 2)}`
+        }]
+      })
+    });
+    const data = await res.json();
+    const text = data.content?.map(c => c.text || "").join("\n") || "Sin respuesta.";
+    document.getElementById("ai-output").innerHTML = formatAIText(text);
+    document.getElementById("ai-result-card").classList.remove("hidden");
+  } catch(e) {
+    document.getElementById("ai-output").innerHTML =
+      `<div class="alert-error">Error al conectar con la IA. Intenta de nuevo.</div>`;
+    document.getElementById("ai-result-card").classList.remove("hidden");
+  }
+
+  btn.disabled = false;
+  btn.innerHTML = "🤖 Generar análisis con IA";
+}
+
+function formatAIText(text) {
+  return text
+    .replace(/^## (.+)$/gm, '<h2>$1</h2>')
+    .replace(/^### (.+)$/gm, '<h3>$1</h3>')
+    .replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>')
+    .replace(/\n/g, '<br>');
+}
+
+// ── INIT ──────────────────────────────────────────────────────────────────
+showStudentStep("identify");
+
+</script>
+</body>
+</html>
